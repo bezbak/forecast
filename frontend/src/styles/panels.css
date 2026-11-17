@@ -1,0 +1,50 @@
+.panel { display: flex; flex-direction: column; overflow: hidden; }
+.ph {
+  flex: none; display: flex; align-items: center; gap: 10px;
+  height: 30px; padding: 0 12px; border-bottom: 1px solid var(--line);
+}
+.ph-idx { font: 500 var(--t-xs) var(--font-num); color: var(--accent); }
+.ph h2 { margin: 0; }
+.ph-aux { margin-left: auto; display: flex; align-items: center; gap: 2px; }
+.pb { flex: 1; min-height: 0; overflow: auto; position: relative; }
+
+.pb::-webkit-scrollbar { width: 6px; height: 6px; }
+.pb::-webkit-scrollbar-thumb { background: var(--line-2); }
+.pb::-webkit-scrollbar-track { background: transparent; }
+.pb { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+
+/* Состояния панели */
+.state {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: flex-start; justify-content: center; gap: 10px; padding: 0 20px;
+  color: var(--fg-2); font-size: var(--t-sm);
+}
+.state-code { font: 500 var(--t-xs) var(--font-num); letter-spacing: 0.08em; color: var(--fg-3); }
+.state-loading .state-code::after {
+  content: ""; display: inline-block; width: 7px; height: 11px; margin-left: 4px;
+  vertical-align: -1px; background: var(--accent); animation: blink 1s steps(1) infinite;
+}
+.state-error .state-code { color: var(--down); }
+.state button {
+  background: none; border: 1px solid var(--line-2); border-radius: var(--radius);
+  padding: 4px 10px; font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--fg); cursor: pointer;
+}
+.state button:hover { border-color: var(--accent); color: var(--accent); }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* Сегментные переключатели (диапазон, модель) */
+.seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: var(--radius); }
+.seg button {
+  background: none; border: 0; padding: 3px 8px; cursor: pointer;
+  font: 500 var(--t-xs) var(--font-num); color: var(--fg-3);
+}
+.seg button + button { border-left: 1px solid var(--line-2); }
+.seg button:hover { color: var(--fg); }
+.seg button[aria-pressed="true"] { color: var(--bg); background: var(--accent); }
+
+:focus-visible { outline: 1px solid var(--accent); outline-offset: -1px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

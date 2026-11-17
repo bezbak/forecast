@@ -1,0 +1,35 @@
+:root {
+  /* поверхности: почти чёрный с холодным оттенком */
+  --bg: #0a0c0f;
+  --bg-1: #0e1114;
+  --bg-2: #13171b;
+  --bg-3: #1a1f24;
+  --line: #1c2228;
+  --line-2: #2a3239;
+
+  /* текст */
+  --fg: #d6dbe0;
+  --fg-2: #8a949e;
+  --fg-3: #545e68;
+
+  /* смысловые цвета: приглушённые, не кислотные */
+  --up: #45c18a;
+  --up-dim: rgba(69, 193, 138, 0.12);
+  --down: #e0606a;
+  --down-dim: rgba(224, 96, 106, 0.12);
+  --accent: #f0a63a;
+  --accent-dim: rgba(240, 166, 58, 0.12);
+  --accent-line: rgba(240, 166, 58, 0.45);
+
+  --radius: 2px;
+  --font-ui: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+  --font-num: "JetBrains Mono", ui-monospace, monospace;
+
+  --t-xs: 10.5px;
+  --t-sm: 12px;
+  --t-md: 13px;
+  --t-lg: 15px;
+  --t-xl: 22px;
+
+  color-scheme: dark;
+}
