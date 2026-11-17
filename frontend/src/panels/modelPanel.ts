@@ -3,6 +3,7 @@ import * as data from "../data";
 import { dateRu, pct, price, trend } from "../format";
 import * as store from "../store";
 import { MODEL_LABELS, MODELS } from "../store";
+import { flash } from "../motion";
 import { panelShell, renderEmpty, renderError, renderLoading } from "./status";
 
 export const MODEL_NOTES: Record<string, string> = {
@@ -109,6 +110,7 @@ export function mountModelPanel(el: HTMLElement): void {
         <span class="label">Прогноз на ${s.horizon} торг. дн. · к ${dateRu(end.date)}</span>
         <div class="mp-big"><span class="num mp-price">${price(end.value)}</span><span class="num ${trend(change)}">${pct(change)}</span></div>
         <div class="mp-iv"><span class="label">80% интервал</span><span class="num">${price(end.lo)} — ${price(end.hi)}</span></div>`;
+      box.querySelectorAll(".mp-big .num").forEach(flash);
     }, (e: ApiError) => {
       if (!isCurrent()) return;
       if (e.status === 404) renderEmpty(box, e.message);

@@ -13,16 +13,52 @@
 .wl-search input::placeholder { color: var(--fg-3); font-family: var(--font-ui); }
 .wl-search input::-webkit-search-cancel-button { display: none; }
 .wl-row {
-  display: grid; grid-template-columns: 50px minmax(0, 1fr) 62px 60px; gap: 8px; align-items: center;
-  height: 26px; padding: 0 12px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 56px 74px; gap: 10px; align-items: center;
+  padding: 0 12px;
 }
 .wl-head { height: 24px; border-bottom: 1px solid var(--line); flex: none; }
 .wl-list { list-style: none; margin: 0; padding: 0; }
-.wl-list .wl-row { cursor: pointer; font-size: var(--t-sm); border-bottom: 1px solid transparent; }
+.wl-list .wl-row { height: 38px; cursor: pointer; font-size: var(--t-sm); border-bottom: 1px solid var(--line); }
 .wl-list .wl-row:hover { background: var(--bg-2); }
 .wl-list .wl-row[aria-selected="true"] { background: var(--accent-dim); box-shadow: inset 2px 0 0 var(--accent); }
+.wl-id, .wl-px { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.wl-px { align-items: flex-end; }
+.wl-px .num:last-child { font-size: var(--t-xs); }
 .wl-t { font-weight: 500; color: var(--fg); }
 .wl-n { color: var(--fg-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--t-xs); }
+.spark { display: block; overflow: visible; }
+.spark polyline { fill: none; stroke-width: 1.1; stroke: currentColor; vector-effect: non-scaling-stroke; }
+.spark-base { stroke: var(--line-2); stroke-dasharray: 1 2; }
+
+/* ───────── Бегущая строка ───────── */
+.tape { overflow: hidden; position: relative; background: var(--bg); }
+.tape::before, .tape::after {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 40px; z-index: 1; pointer-events: none;
+}
+.tape::before { left: 0; background: linear-gradient(to right, var(--bg), transparent); }
+.tape::after { right: 0; background: linear-gradient(to left, var(--bg), transparent); }
+.tape-track { display: flex; width: max-content; height: 100%; animation: tape var(--duration, 240s) linear infinite; }
+.tape:hover .tape-track { animation-play-state: paused; }
+.tape-run { display: flex; }
+.tape-item {
+  display: flex; align-items: center; gap: 8px; height: 100%; padding: 0 16px;
+  background: none; border: 0; border-right: 1px solid var(--line); cursor: pointer;
+  font-size: var(--t-xs); white-space: nowrap; color: var(--fg-2);
+}
+.tape-item b { font: 500 var(--t-xs) var(--font-num); color: var(--fg); }
+.tape-item:hover { background: var(--bg-2); }
+@keyframes tape { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .tape { overflow-x: auto; }
+  .tape-run[aria-hidden="true"] { display: none; }
+}
+
+/* ───────── Подсветка изменившихся значений ───────── */
+.flash { animation: flash 0.7s ease-out; }
+@keyframes flash {
+  0% { background: var(--accent-dim); box-shadow: 0 0 0 2px var(--accent-dim); }
+  100% { background: transparent; box-shadow: 0 0 0 2px transparent; }
+}
 .r { text-align: right; justify-self: end; }
 .wl-none { padding: 16px 12px; color: var(--fg-3); font-size: var(--t-sm); }
 

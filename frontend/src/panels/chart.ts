@@ -7,6 +7,7 @@ import * as data from "../data";
 import { compact, dateRu, pct, price, trend } from "../format";
 import * as store from "../store";
 import { MODEL_LABELS } from "../store";
+import { flash, progressive } from "../motion";
 import { panelShell, renderEmpty, renderError, renderLoading } from "./status";
 
 const RANGES: [RangeName, string][] = [["1M", "1М"], ["3M", "3М"], ["6M", "6М"], ["1Y", "1Г"], ["5Y", "5Л"], ["ALL", "Всё"]];
@@ -64,6 +65,8 @@ export function mountChart(el: HTMLElement): void {
   let hiLine: ISeriesApi<"Line"> | null = null;
   let candles: Candle[] = [];
   let fc: ForecastResponse | null = null;
+  let shown = 0; // сколько точек прогноза уже нарисовано (для анимации)
+  let stopAnim: () => void = () => undefined;
 
   function ensureChart(): void {
     if (chart) return;
@@ -134,7 +137,7 @@ export function mountChart(el: HTMLElement): void {
       zone.setAttribute("x", String(x0)); zone.setAttribute("y", "0");
       zone.setAttribute("width", String(Math.max(0, plotW - x0))); zone.setAttribute("height", String(plotH));
     }
-    const pts = fc?.status === "ok" ? fc.points : [];
+    const pts = fc?.status === "ok" ? fc.points.slice(0, shown) : [];
     if (!pts.length || x0 == null) {
       band.setAttribute("d", "");
       return;
@@ -173,14 +176,28 @@ export function mountChart(el: HTMLElement): void {
     setOhlc(candles.find((c) => c.time === p.time) ?? candles[candles.length - 1]);
   }
 
-  function renderForecastLines(): void {
+  function renderForecastLines(animate = false): void {
     if (!fcLine || !loLine || !hiLine || !candles.length) return;
+    stopAnim();
     const last = candles[candles.length - 1];
     const ok = fc?.status === "ok" && fc.points.length > 0;
     const start = { time: last.time as Time, value: last.close };
-    fcLine.setData(ok ? [start, ...fc!.points.map((p) => ({ time: p.date as Time, value: p.value }))] : []);
-    loLine.setData(ok ? [start, ...fc!.points.map((p) => ({ time: p.date as Time, value: p.lo }))] : []);
-    hiLine.setData(ok ? [start, ...fc!.points.map((p) => ({ time: p.date as Time, value: p.hi }))] : []);
+    const pts = ok ? fc!.points : [];
+    const series = (key: "value" | "lo" | "hi") => [start, ...pts.map((p) => ({ time: p.date as Time, value: p[key] }))];
+    const all = { value: series("value"), lo: series("lo"), hi: series("hi") };
+    const draw = (k: number) => {
+      shown = k;
+      fcLine!.setData(ok ? all.value.slice(0, k + 1) : []);
+      loLine!.setData(ok ? all.lo.slice(0, k + 1) : []);
+      hiLine!.setData(ok ? all.hi.slice(0, k + 1) : []);
+      drawOverlay();
+    };
+    if (animate && ok) {
+      draw(1);
+      stopAnim = progressive(pts.length, draw);
+    } else {
+      draw(pts.length);
+    }
     const box = q(".ch-fc");
     const s = store.get();
     if (ok) {
@@ -188,12 +205,12 @@ export function mountChart(el: HTMLElement): void {
       const change = (end.value / fc!.last_close - 1) * 100;
       box.innerHTML = `<span class="label">Прогноз · ${MODEL_LABELS[s.model]} · ${s.horizon} дн.</span>`
         + `<span class="num">${price(end.value)}</span><span class="num ${trend(change)}">${pct(change)}</span>`;
+      if (animate) box.querySelectorAll(".num").forEach(flash);
     } else {
       const why = fc?.status === "insufficient_data" ? "недостаточно истории"
         : fc?.status === "failed" ? "ошибка обучения модели" : "нет прогноза";
       box.innerHTML = `<span class="label">Прогноз · ${MODEL_LABELS[s.model]}</span><span class="ch-fc-off">${why}</span>`;
     }
-    requestAnimationFrame(drawOverlay);
   }
 
   function renderQuote(): void {
@@ -244,7 +261,7 @@ export function mountChart(el: HTMLElement): void {
     data.forecast(s.ticker, s.model, s.horizon).then((f) => {
       if (!isCurrent()) return;
       fc = f;
-      renderForecastLines();
+      renderForecastLines(true);
     }, () => {
       if (!isCurrent()) return;
       fc = null;
