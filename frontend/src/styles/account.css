@@ -1,0 +1,127 @@
+/* ───────── Кнопки и формы ───────── */
+.btn {
+  height: 32px; padding: 0 14px; border: 1px solid var(--line-2); border-radius: var(--radius);
+  background: none; color: var(--fg); cursor: pointer;
+  font: 500 var(--t-xs) var(--font-ui); text-transform: uppercase; letter-spacing: 0.1em;
+}
+.btn:hover:not(:disabled) { border-color: var(--fg-2); }
+.btn:disabled { opacity: 0.5; cursor: progress; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.btn-primary:hover:not(:disabled) { border-color: var(--fg); }
+.btn-row { display: flex; gap: 8px; justify-content: flex-end; }
+.link { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font: inherit; }
+.link:hover { text-decoration: underline; }
+
+.form { display: flex; flex-direction: column; gap: 14px; }
+.form label { display: flex; flex-direction: column; gap: 6px; }
+.form small { color: var(--fg-3); font-size: var(--t-xs); }
+.form input, .ai-form textarea {
+  height: 34px; padding: 0 10px; background: var(--bg); border: 1px solid var(--line-2); border-radius: var(--radius);
+  font: 400 var(--t-md) var(--font-num); color: var(--fg); outline: 0;
+}
+.form input:focus, .ai-form textarea:focus { border-color: var(--accent); }
+.form-error { margin: 0; color: var(--down); font-size: var(--t-sm); }
+
+/* ───────── Модальное окно ───────── */
+.modal {
+  width: min(420px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--line-2); border-radius: var(--radius);
+  background: var(--bg); color: var(--fg); box-shadow: 0 0 0 1px #000, 0 24px 80px rgba(0, 0, 0, 0.6);
+}
+.modal::backdrop { background: rgba(5, 6, 8, 0.72); }
+.modal .ph { background: var(--bg-1); }
+.modal-x {
+  margin-left: auto; width: 24px; height: 24px; background: none; border: 0; color: var(--fg-3);
+  cursor: pointer; font-size: 12px;
+}
+.modal-x:hover { color: var(--fg); }
+.modal-body { padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.modal-reason { margin: 0; color: var(--fg-2); font-size: var(--t-sm); line-height: 1.5; }
+.modal-reason b { color: var(--fg); font-weight: 500; }
+.modal-alt { margin: 0; font-size: var(--t-sm); color: var(--fg-3); }
+.modal-note { margin: 0; font-size: var(--t-xs); color: var(--fg-3); line-height: 1.5; }
+
+.plan { border: 1px solid var(--line-2); }
+.plan-head {
+  display: flex; align-items: baseline; justify-content: space-between; padding: 14px;
+  border-bottom: 1px solid var(--line); box-shadow: inset 2px 0 0 var(--accent);
+}
+.plan-name { font-weight: 600; font-size: var(--t-lg); letter-spacing: 0.06em; text-transform: uppercase; }
+.plan-price { font-size: var(--t-xl); font-weight: 500; }
+.plan-price small { font-size: var(--t-xs); color: var(--fg-3); font-weight: 400; }
+.plan-list { margin: 0; padding: 12px 14px; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: var(--t-sm); }
+.plan-list li::before { content: "+"; color: var(--accent); font-family: var(--font-num); margin-right: 8px; }
+
+.gateway-banner {
+  padding: 8px 10px; border: 1px dashed var(--accent-line); color: var(--accent);
+  font: 500 var(--t-xs) var(--font-num); letter-spacing: 0.08em; text-transform: uppercase;
+}
+.gateway { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 0; font-size: var(--t-sm); }
+.gateway dt { color: var(--fg-3); }
+.gateway dd { margin: 0; text-align: right; }
+.gateway-sum { font-size: var(--t-lg); color: var(--fg); }
+
+/* ───────── Аккаунт в верхней панели ───────── */
+.acct { display: flex; align-items: center; gap: 8px; padding-left: 14px; border-left: 1px solid var(--line-2); }
+.acct-email { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-2); font: 400 var(--t-xs) var(--font-num); }
+.acct-btn { background: none; border: 0; color: var(--fg-2); cursor: pointer; font: 500 var(--t-xs) var(--font-ui); text-transform: uppercase; letter-spacing: 0.1em; }
+.acct-btn:hover { color: var(--fg); }
+.plan-badge {
+  padding: 2px 6px; border: 1px solid var(--line-2); border-radius: var(--radius); background: none; cursor: pointer;
+  font: 500 9.5px var(--font-num); letter-spacing: 0.08em; color: var(--fg-2);
+}
+.plan-badge.pro { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.plan-badge.free:hover { border-color: var(--accent); color: var(--accent); }
+.ai-toggle {
+  display: flex; align-items: center; gap: 8px; height: 22px; padding: 0 8px;
+  background: none; border: 1px solid var(--line-2); border-radius: var(--radius); cursor: pointer;
+  color: var(--fg); font: 500 var(--t-xs) var(--font-ui); text-transform: uppercase; letter-spacing: 0.1em;
+}
+.ai-toggle:hover, .ai-toggle[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.ai-dot { width: 6px; height: 6px; background: var(--accent); animation: blink 1.6s steps(1) infinite; }
+.topbar-keys { margin-left: auto; }
+
+/* ───────── 06 ИИ-аналитик ───────── */
+.ai-drawer {
+  position: fixed; z-index: 20; top: 63px; right: 0; bottom: 25px; width: min(440px, 100vw);
+  display: flex; flex-direction: column; background: var(--bg); border-left: 1px solid var(--line-2);
+  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.5);
+  transform: translateX(100%); visibility: hidden; transition: transform 0.22s ease-out, visibility 0s 0.22s;
+}
+.ai-drawer.open { transform: none; visibility: visible; transition: transform 0.22s ease-out; }
+.ai-drawer .ph { background: var(--bg-1); }
+.ai-ticker { font-size: var(--t-xs); color: var(--fg-2); }
+.ai-summary { padding: 14px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.ai-summary-text { margin: 0; font-size: var(--t-sm); line-height: 1.55; color: var(--fg); }
+.ai-summary-text.is-loading { color: var(--fg-3); }
+.tag-accent { color: var(--accent); border-color: currentColor; }
+.tag-muted { color: var(--fg-3); border-color: var(--line-2); }
+
+.ai-chat { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.ai-log { flex: 1; min-height: 0; overflow: auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+.ai-msg { display: flex; flex-direction: column; gap: 4px; }
+.ai-msg p { margin: 0; font-size: var(--t-sm); line-height: 1.55; white-space: pre-wrap; }
+.ai-user { padding-left: 10px; box-shadow: inset 2px 0 0 var(--line-2); }
+.ai-user p { color: var(--fg-2); }
+.ai-assistant .ai-who { color: var(--accent); }
+.ai-msg p.is-typing::after {
+  content: ""; display: inline-block; width: 7px; height: 12px; margin-left: 2px; vertical-align: -2px;
+  background: var(--accent); animation: blink 1s steps(1) infinite;
+}
+.ai-msg p.ai-error { color: var(--down); }
+.ai-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.ai-chip {
+  background: none; border: 1px solid var(--line-2); border-radius: var(--radius); padding: 6px 10px; cursor: pointer;
+  color: var(--fg-2); font: 400 var(--t-sm) var(--font-ui); text-align: left;
+}
+.ai-chip:hover { border-color: var(--accent); color: var(--fg); }
+.ai-lock { padding: 14px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ai-lock p { margin: 0; font-size: var(--t-sm); color: var(--fg-2); }
+.ai-form { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--line); }
+.ai-form[hidden], .ai-lock[hidden] { display: none; }
+.ai-form textarea { flex: 1; height: auto; min-height: 38px; padding: 8px 10px; resize: none; font-family: var(--font-ui); line-height: 1.4; }
+.ai-form .btn { align-self: flex-end; }
+
+@media (max-width: 1100px) {
+  .acct-email { display: none; }
+  .ai-drawer { top: 0; bottom: 0; }
+}

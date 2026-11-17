@@ -8,3 +8,4 @@ data/candles/
 data/results/
 .superpowers/
 data/app.db
+.env

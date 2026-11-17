@@ -1,0 +1,10 @@
+[Unit]
+Description=Run forecast-update after the US market close
+
+[Timer]
+# 04:00 по Бишкеку (UTC+6), вторник–суббота: биржа США закрылась, дневная свеча готова
+OnCalendar=Tue..Sat *-*-* 04:00:00 Asia/Bishkek
+Persistent=true
+
+[Install]
+WantedBy=timers.target

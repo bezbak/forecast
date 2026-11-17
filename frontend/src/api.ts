@@ -35,6 +35,11 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  return (await send(path, init)).json() as Promise<T>;
+}
+
+/** Запрос с единой обработкой ошибок; возвращает успешный ответ. */
+async function send(path: string, init?: RequestInit): Promise<Response> {
   let res: Response;
   try {
     res = await (init ? fetch(path, init) : fetch(path));
@@ -50,11 +55,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     try {
       const body = await res.json();
       if (typeof body?.detail === "string") message = body.detail;
+      else if (Array.isArray(body?.detail) && body.detail[0]?.msg) message = String(body.detail[0].msg).replace(/^Value error, /, "");
     } catch { /* тело не JSON — оставляем общее сообщение */ }
     throw new ApiError(res.status, message);
   }
-  return res.json() as Promise<T>;
+  return res;
 }
+
+const post = <T>(path: string, body?: unknown) => request<T>(path, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: body === undefined ? undefined : JSON.stringify(body),
+});
 
 const enc = encodeURIComponent;
 export const getTickers = () => request<TickerRow[]>("/api/tickers");
@@ -66,3 +78,48 @@ export const getOverview = () => request<OverviewRow[]>("/api/overview");
 export const getMeta = () => request<Meta>("/api/meta");
 export const retrain = (t: string) => request<{ job_id: string }>(`/api/retrain/${enc(t)}`, { method: "POST" });
 export const getJob = (id: string) => request<Job>(`/api/jobs/${enc(id)}`);
+
+// ── Аккаунт и демо-оплата
+export interface User { id: number; email: string; plan: "free" | "pro"; pro_until: string | null }
+export interface Plan { id: string; name: string; amount: number; currency: string; days: number; features: string[] }
+export interface Payment { id: string; plan: string; amount: number; currency: string; status: "pending" | "paid" | "cancelled" }
+
+export const me = () => request<User | null>("/api/auth/me");
+export const login = (email: string, password: string) => post<User>("/api/auth/login", { email, password });
+export const register = (email: string, password: string) => post<User>("/api/auth/register", { email, password });
+export const logout = () => post<{ ok: boolean }>("/api/auth/logout");
+export const getPlans = () => request<Plan[]>("/api/billing/plans");
+export const checkout = (plan: string) => post<Payment>("/api/billing/checkout", { plan });
+export const payDemo = (id: string) => post<{ payment: Payment; user: User }>(`/api/billing/${enc(id)}/pay`);
+export const cancelPayment = (id: string) => post<Payment>(`/api/billing/${enc(id)}/cancel`);
+
+// ── ИИ-аналитик
+export interface ChatMessage { role: "user" | "assistant"; content: string }
+export interface Summary { ticker: string; source: "ai" | "template"; text: string }
+
+export const aiStatus = () => request<{ enabled: boolean; pro: boolean }>("/api/ai/status");
+export const aiSummary = (t: string) => request<Summary>(`/api/ai/summary/${enc(t)}`);
+
+/** Ответ ИИ потоком: onChunk получает текст по мере генерации; возвращается весь ответ. */
+export async function chatStream(ticker: string, messages: ChatMessage[], onChunk: (text: string) => void): Promise<string> {
+  const res = await send("/api/ai/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ticker, messages }),
+  });
+  if (!res.body) {
+    const text = await res.text();
+    onChunk(text);
+    return text;
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let full = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const text = decoder.decode(value, { stream: true });
+    if (text) { full += text; onChunk(text); }
+  }
+  return full;
+}

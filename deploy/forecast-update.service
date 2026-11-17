@@ -1,0 +1,10 @@
+[Unit]
+Description=AI Forecast Terminal: daily data refresh and retraining
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=willo
+WorkingDirectory=/home/willo/forecast
+ExecStart=/home/willo/forecast/deploy/update.sh

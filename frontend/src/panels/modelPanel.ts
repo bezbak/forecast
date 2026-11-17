@@ -5,6 +5,7 @@ import { dateRu, pct, price, trend } from "../format";
 import * as store from "../store";
 import { MODEL_LABELS, MODELS } from "../store";
 import { flash } from "../motion";
+import { isPro, openUpgrade } from "../account";
 import { panelShell, renderEmpty, renderError, renderLoading } from "./status";
 
 export const MODEL_NOTES: Record<string, string> = {
@@ -187,6 +188,10 @@ export function mountModelPanel(el: HTMLElement): void {
   }
 
   retrainBtn.addEventListener("click", async () => {
+    if (!isPro()) {
+      openUpgrade("Переобучение моделей с сайта доступно в тарифе Про");
+      return;
+    }
     const ticker = store.get().ticker;
     retrainTicker = ticker;
     setRetrain("Запуск…", 0, true);

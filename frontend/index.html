@@ -21,6 +21,8 @@
         <span><kbd>↑</kbd><kbd>↓</kbd> бумага</span>
         <span><kbd>1</kbd>–<kbd>4</kbd> модель</span>
       </div>
+      <button class="ai-toggle" id="ai-toggle" aria-pressed="false"><span class="ai-dot"></span>ИИ-аналитик <kbd>I</kbd></button>
+      <div class="acct" id="account"></div>
     </header>
     <div class="tape" id="tape"></div>
     <section class="panel" id="watchlist"></section>
@@ -37,6 +39,7 @@
       <span>Источник: Yahoo Finance</span>
     </footer>
   </div>
+  <aside class="ai-drawer" id="ai" aria-label="ИИ-аналитик"></aside>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

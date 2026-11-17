@@ -8,7 +8,11 @@ import "./styles/layout.css";
 import "./styles/panels.css";
 import "./styles/views.css";
 
+import "./styles/account.css";
+
+import { mountAccount } from "./account";
 import { getMeta } from "./api";
+import { mountAiPanel } from "./panels/aiPanel";
 import { dateRu } from "./format";
 import { mountChart } from "./panels/chart";
 import { mountComparison } from "./panels/comparison";
@@ -21,6 +25,8 @@ import { MODELS } from "./store";
 
 const $ = (id: string) => document.getElementById(id) as HTMLElement;
 
+mountAccount($("account"));
+mountAiPanel($("ai"), $("ai-toggle"));
 mountTickerTape($("tape"));
 mountWatchlist($("watchlist"));
 mountChart($("chart"));
@@ -51,7 +57,7 @@ showTab("models");
 
 // 1–4 — выбор модели, если фокус не в поле ввода
 document.addEventListener("keydown", (e) => {
-  if (e.ctrlKey || e.metaKey || e.altKey || e.target instanceof HTMLInputElement) return;
+  if (e.ctrlKey || e.metaKey || e.altKey || e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
   const i = Number(e.key) - 1;
   if (Number.isInteger(i) && i >= 0 && i < MODELS.length) store.set({ model: MODELS[i] });
 });
