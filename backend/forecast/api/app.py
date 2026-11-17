@@ -2,10 +2,12 @@
 from typing import Literal
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 
 from forecast import config
+from forecast.api.account import require_pro
+from forecast.api.account import router as account_router
 from forecast.config import MAX_HORIZON, MODEL_NAMES
 from forecast.jobs import JobManager
 from forecast.results import load_result
@@ -18,6 +20,7 @@ RANGE_MONTHS = {"1M": 1, "3M": 3, "6M": 6, "1Y": 12, "5Y": 60}
 OVERVIEW_DAY = 7
 
 app = FastAPI(title="AI Forecast Terminal")
+app.include_router(account_router)
 
 
 def _company(ticker: str) -> Company:
@@ -143,7 +146,7 @@ jobs = JobManager()
 
 
 @app.post("/api/retrain/{ticker}")
-def retrain(ticker: str):
+def retrain(ticker: str, _user: dict = Depends(require_pro)):
     _candles(ticker)  # 404 для неизвестной бумаги или бумаги без котировок
     return {"job_id": jobs.start(ticker)}
 

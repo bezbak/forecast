@@ -21,6 +21,7 @@ def client(tmp_data, monkeypatch):
         {"ticker": "CCC", "name": "Ccc Ltd.", "sector": "Tech"},
     ]}), encoding="utf-8")
     monkeypatch.setattr(config, "UNIVERSE_FILE", uni)
+    monkeypatch.setattr(config, "DB_FILE", tmp_data / "app.db")
     universe._read.cache_clear()
     for i, t in enumerate(["AAA", "BBB"]):
         save_candles(t, make_candles(1200, seed=i))
@@ -124,6 +125,7 @@ def test_retrain_flow(client, monkeypatch):
     from tests.test_pipeline import FAST
 
     monkeypatch.setattr(app_module, "jobs", JobManager(models=FAST))
+    login_pro(client)
     job_id = client.post("/api/retrain/BBB").json()["job_id"]
     for _ in range(200):
         job = client.get(f"/api/jobs/{job_id}").json()
@@ -135,7 +137,14 @@ def test_retrain_flow(client, monkeypatch):
 
 
 def test_retrain_unknown_ticker_404(client):
+    login_pro(client)
     assert client.post("/api/retrain/ZZZ").status_code == 404
+
+
+def login_pro(client):
+    from forecast import billing
+    uid = client.post("/api/auth/register", json={"email": "pro@b.kg", "password": "password1"}).json()["id"]
+    billing.pay(billing.create_checkout(uid, "pro")["id"], uid)
 
 
 def test_unknown_job_404(client):

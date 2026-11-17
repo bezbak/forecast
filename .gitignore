@@ -7,3 +7,4 @@ __pycache__/
 data/candles/
 data/results/
 .superpowers/
+data/app.db

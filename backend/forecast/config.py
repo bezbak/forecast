@@ -7,6 +7,8 @@ CANDLES_DIR = DATA_DIR / "candles"
 RESULTS_DIR = DATA_DIR / "results"
 UNIVERSE_FILE = DATA_DIR / "nasdaq100.json"
 FRONTEND_DIST = ROOT / "frontend" / "dist"
+DB_FILE = DATA_DIR / "app.db"  # пользователи, сессии, платежи
+SESSION_DAYS = 30
 
 HISTORY_YEARS = 10
 HOLDOUT_DAYS = 252
