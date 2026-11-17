@@ -61,6 +61,8 @@ def tickers():
         if not has_candles(c.ticker):
             continue
         close = load_candles(c.ticker)["close"]
+        if len(close) < 2:  # бумага не торгуется (например, снята с биржи)
+            continue
         last, prev = float(close.iloc[-1]), float(close.iloc[-2])
         rows.append({
             "ticker": c.ticker, "name": c.name, "sector": c.sector,

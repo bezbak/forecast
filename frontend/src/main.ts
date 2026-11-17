@@ -6,17 +6,21 @@ import "@fontsource/ibm-plex-sans-condensed/600.css";
 import "./styles/tokens.css";
 import "./styles/layout.css";
 import "./styles/panels.css";
+import "./styles/views.css";
 
 import { getMeta } from "./api";
 import { dateRu } from "./format";
-import { panelShell } from "./panels/status";
+import { mountChart } from "./panels/chart";
+import { mountComparison } from "./panels/comparison";
+import { mountModelPanel } from "./panels/modelPanel";
+import { mountWatchlist } from "./panels/watchlist";
 
 const $ = (id: string) => document.getElementById(id) as HTMLElement;
 
-panelShell($("watchlist"), "01", "Бумаги");
-panelShell($("chart"), "02", "График");
-panelShell($("model"), "03", "Модель");
-panelShell($("comparison"), "04", "Сравнение моделей");
+mountWatchlist($("watchlist"));
+mountChart($("chart"));
+mountModelPanel($("model"));
+mountComparison($("comparison"));
 
 getMeta()
   .then((m) => {

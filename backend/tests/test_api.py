@@ -40,6 +40,14 @@ def test_tickers_shape(client):
     assert row["spark"][-1] == row["last"]
 
 
+def test_tickers_skip_single_candle(client):
+    save_candles("CCC", make_candles(1))
+    rows = client.get("/api/tickers")
+    assert rows.status_code == 200
+    assert "CCC" not in [r["ticker"] for r in rows.json()]
+    assert client.get("/api/overview").status_code == 200
+
+
 def test_candles_range(client):
     rows = client.get("/api/candles/AAA?range=1M").json()
     assert 15 <= len(rows) <= 23

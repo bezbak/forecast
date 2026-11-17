@@ -34,6 +34,10 @@ async function request<T>(path: string): Promise<T> {
   } catch {
     throw new ApiError(null, "Нет связи с сервером");
   }
+  if (res.status === 502 || res.status === 504) {
+    // Прокси (dev-сервер) не достучался до бэкенда — для пользователя это то же «нет связи».
+    throw new ApiError(null, "Нет связи с сервером");
+  }
   if (!res.ok) {
     let message = `Ошибка сервера (${res.status})`;
     try {

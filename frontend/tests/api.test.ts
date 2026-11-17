@@ -19,6 +19,13 @@ test("network failure becomes 'no connection'", async () => {
   expect(err.message).toBe("Нет связи с сервером");
 });
 
+test("proxy gateway errors also mean 'no connection'", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => new Response("", { status: 502 })));
+  const err = await getMetrics("AAA").catch((e) => e);
+  expect(err.status).toBeNull();
+  expect(err.message).toBe("Нет связи с сервером");
+});
+
 test("success returns parsed json", async () => {
   vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ ticker: "AAA", status: "ok", models: [] }))));
   expect((await getMetrics("AAA")).ticker).toBe("AAA");
