@@ -30,6 +30,43 @@
 .spark polyline { fill: none; stroke-width: 1.1; stroke: currentColor; vector-effect: non-scaling-stroke; }
 .spark-base { stroke: var(--line-2); stroke-dasharray: 1 2; }
 
+/* ───────── Переобучение ───────── */
+.mp-retrain { gap: 6px; }
+.mp-retrain-btn {
+  background: none; border: 1px solid var(--line-2); border-radius: var(--radius); padding: 6px 10px;
+  font: 500 var(--t-xs) var(--font-ui); text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; color: var(--fg);
+}
+.mp-retrain-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.mp-retrain-btn:disabled { color: var(--fg-3); cursor: progress; }
+.mp-progress { height: 2px; background: var(--line-2); }
+.mp-progress i { display: block; height: 100%; width: var(--p, 0%); background: var(--accent); transition: width 0.4s; }
+.mp-retrain-status { font: 400 var(--t-xs) var(--font-num); color: var(--fg-2); min-height: 1em; }
+
+/* ───────── 05 Карта рынка ───────── */
+.ph-aux .seg-tabs { margin-left: 14px; }
+.hm-legend { display: inline-flex; align-items: center; gap: 6px; font-size: 9.5px; color: var(--fg-3); margin-right: 10px; }
+.hm-legend i {
+  width: 72px; height: 6px;
+  background: linear-gradient(to right, var(--down), var(--bg-3) 50%, var(--up));
+}
+.hm-grid { display: flex; flex-wrap: wrap; gap: 14px 18px; padding: 12px 14px; align-content: flex-start; }
+.hm-sector { flex: 1 1 calc(var(--n) * 30px); min-width: 120px; }
+.hm-sector h3 { margin: 0 0 6px; }
+.hm-sector h3 .num { color: var(--fg-3); margin-left: 4px; letter-spacing: 0; }
+.hm-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 2px; }
+.hm-tile {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  padding: 4px 6px; border: 0; border-radius: 1px; cursor: pointer; text-align: left;
+  background: var(--bg-2); color: var(--fg);
+}
+.hm-tile b { font: 500 var(--t-xs) var(--font-num); }
+.hm-tile .num { font-size: 9.5px; color: rgba(255, 255, 255, 0.72); }
+.hm-tile.up { background: color-mix(in oklab, var(--up) calc(var(--k) * 70%), var(--bg-2)); }
+.hm-tile.down { background: color-mix(in oklab, var(--down) calc(var(--k) * 70%), var(--bg-2)); }
+.hm-tile.none .num { color: var(--fg-3); }
+.hm-tile:hover { outline: 1px solid var(--fg-2); outline-offset: -1px; }
+.hm-tile[aria-current="true"] { outline: 1px solid var(--accent); outline-offset: -1px; }
+
 /* ───────── Бегущая строка ───────── */
 .tape { overflow: hidden; position: relative; background: var(--bg); }
 .tape::before, .tape::after {

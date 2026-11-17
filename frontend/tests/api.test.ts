@@ -1,5 +1,17 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { ApiError, getMetrics } from "../src/api";
+import { ApiError, getJob, getMetrics, retrain } from "../src/api";
+
+test("retrain posts and returns the job id", async () => {
+  const fetchMock = vi.fn(async () => new Response(JSON.stringify({ job_id: "abc" })));
+  vi.stubGlobal("fetch", fetchMock);
+  expect(await retrain("NVDA")).toEqual({ job_id: "abc" });
+  expect(fetchMock).toHaveBeenCalledWith("/api/retrain/NVDA", { method: "POST" });
+});
+
+test("getJob reads job status", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ id: "abc", status: "running", progress: 0.5 }))));
+  expect((await getJob("abc")).progress).toBe(0.5);
+});
 
 afterEach(() => vi.unstubAllGlobals());
 

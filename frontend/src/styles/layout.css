@@ -37,22 +37,16 @@ kbd {
     "watch compare compare"
     "status status status";
 }
-.app.has-heat {
-  grid-template-areas:
-    "top top top"
-    "tape tape tape"
-    "watch chart model"
-    "watch compare heat"
-    "status status status";
-}
 .topbar { grid-area: top; }
 .tape { grid-area: tape; }
 #watchlist { grid-area: watch; }
 #chart { grid-area: chart; }
 #model { grid-area: model; }
-#comparison { grid-area: compare; }
-#heatmap { grid-area: heat; display: none; }
-.app.has-heat #heatmap { display: flex; }
+/* Сравнение и карта рынка — вкладки одной ячейки */
+#comparison, #heatmap { grid-area: compare; }
+#heatmap { display: none; }
+.app.show-heat #heatmap { display: flex; }
+.app.show-heat #comparison { display: none; }
 .statusbar { grid-area: status; }
 
 .topbar, .tape, .statusbar, .panel { background: var(--bg); min-width: 0; min-height: 0; }
@@ -85,11 +79,11 @@ kbd {
 .statusbar .spacer { margin-left: auto; }
 
 @media (max-width: 1100px) {
-  .app, .app.has-heat {
+  .app {
     height: auto; min-height: 100vh;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto 28px 360px 520px auto auto auto auto;
-    grid-template-areas: "top" "tape" "watch" "chart" "model" "compare" "heat" "status";
+    grid-template-rows: auto 28px 360px 520px auto 420px auto;
+    grid-template-areas: "top" "tape" "watch" "chart" "model" "compare" "status";
   }
   .topbar { flex-wrap: wrap; padding: 8px 14px; row-gap: 6px; }
   .topbar-keys { display: none; }

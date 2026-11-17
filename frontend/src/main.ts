@@ -12,6 +12,7 @@ import { getMeta } from "./api";
 import { dateRu } from "./format";
 import { mountChart } from "./panels/chart";
 import { mountComparison } from "./panels/comparison";
+import { mountHeatmap } from "./panels/heatmap";
 import { mountModelPanel } from "./panels/modelPanel";
 import { mountTickerTape } from "./panels/tickerTape";
 import { mountWatchlist } from "./panels/watchlist";
@@ -24,7 +25,29 @@ mountTickerTape($("tape"));
 mountWatchlist($("watchlist"));
 mountChart($("chart"));
 mountModelPanel($("model"));
-mountComparison($("comparison"));
+
+// Нижняя панель: вкладки «Модели» (сравнение) и «Рынок» (тепловая карта) в одной ячейке сетки
+const tabSets: HTMLElement[] = [];
+function makeTabs(): HTMLElement {
+  const seg = document.createElement("div");
+  seg.className = "seg seg-tabs";
+  seg.innerHTML = `<button data-tab="models">Модели</button><button data-tab="market">Рынок</button>`;
+  seg.addEventListener("click", (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>("button[data-tab]");
+    if (b) showTab(b.dataset.tab as "models" | "market");
+  });
+  tabSets.push(seg);
+  return seg;
+}
+mountComparison($("comparison"), makeTabs());
+const heatmap = mountHeatmap($("heatmap"), makeTabs());
+function showTab(tab: "models" | "market"): void {
+  $("app").classList.toggle("show-heat", tab === "market");
+  tabSets.forEach((s) => s.querySelectorAll<HTMLElement>("button").forEach((b) =>
+    b.setAttribute("aria-pressed", String(b.dataset.tab === tab))));
+  if (tab === "market") heatmap.show();
+}
+showTab("models");
 
 // 1–4 — выбор модели, если фокус не в поле ввода
 document.addEventListener("keydown", (e) => {

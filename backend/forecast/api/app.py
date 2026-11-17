@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from forecast import config
 from forecast.config import MAX_HORIZON, MODEL_NAMES
+from forecast.jobs import JobManager
 from forecast.results import load_result
 from forecast.store import has_candles, load_candles
 from forecast.universe import Company, load_universe, universe_asof
@@ -134,6 +135,23 @@ def meta():
     dates = [load_candles(c.ticker).index[-1] for c in load_universe() if has_candles(c.ticker)]
     return {"universe_asof": universe_asof(),
             "data_asof": max(dates).strftime("%Y-%m-%d") if dates else None}
+
+
+jobs = JobManager()
+
+
+@app.post("/api/retrain/{ticker}")
+def retrain(ticker: str):
+    _candles(ticker)  # 404 для неизвестной бумаги или бумаги без котировок
+    return {"job_id": jobs.start(ticker)}
+
+
+@app.get("/api/jobs/{job_id}")
+def job_status(job_id: str):
+    job = jobs.get(job_id)
+    if job is None:
+        raise HTTPException(404, "Задача не найдена")
+    return job
 
 
 if config.FRONTEND_DIST.exists():

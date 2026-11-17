@@ -8,10 +8,11 @@ import { panelShell, renderEmpty, renderError, renderLoading } from "./status";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
-export function mountComparison(el: HTMLElement): void {
+export function mountComparison(el: HTMLElement, tabs?: HTMLElement): void {
   const { body, aux } = panelShell(el, "04", "Сравнение моделей");
   el.classList.add("cmp");
   aux.innerHTML = `<span class="cmp-legend"><i class="sw sw-best"></i>лучшая по MAE<i class="sw sw-bad"></i>хуже Naive</span>`;
+  if (tabs) aux.append(tabs);
   let metrics: MetricsResponse | null = null;
 
   function row(m: ModelMetrics, best: ModelMetrics | null, maxMape: number, selected: ModelName): string {

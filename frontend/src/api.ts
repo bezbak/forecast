@@ -19,6 +19,10 @@ export interface ModelMetrics {
 export interface MetricsResponse { ticker: string; status: "ok" | "insufficient_data"; models: ModelMetrics[] }
 export interface OverviewRow { ticker: string; sector: string; change_pct: number; forecast_pct: number | null }
 export interface Meta { universe_asof: string; data_asof: string | null }
+export interface Job {
+  id: string; ticker: string; status: "running" | "done" | "failed";
+  progress: number; model: ModelName | null; error: string | null;
+}
 
 export class ApiError extends Error {
   constructor(public status: number | null, message: string) {
@@ -27,10 +31,10 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string): Promise<T> {
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(path);
+    res = await (init ? fetch(path, init) : fetch(path));
   } catch {
     throw new ApiError(null, "Нет связи с сервером");
   }
@@ -57,3 +61,5 @@ export const getForecast = (t: string, model: ModelName, horizon: number) =>
 export const getMetrics = (t: string) => request<MetricsResponse>(`/api/metrics/${enc(t)}`);
 export const getOverview = () => request<OverviewRow[]>("/api/overview");
 export const getMeta = () => request<Meta>("/api/meta");
+export const retrain = (t: string) => request<{ job_id: string }>(`/api/retrain/${enc(t)}`, { method: "POST" });
+export const getJob = (id: string) => request<Job>(`/api/jobs/${enc(id)}`);

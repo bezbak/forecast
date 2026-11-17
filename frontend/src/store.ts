@@ -33,6 +33,11 @@ export function set(patch: Partial<State>): void {
   listeners.forEach((fn) => fn(state, changed));
 }
 
+/** Оповестить подписчиков, будто бумага выбрана заново (перезагрузка данных после переобучения). */
+export function refresh(): void {
+  listeners.forEach((fn) => fn(state, new Set<keyof State>(["ticker"])));
+}
+
 /** Подписка; слушатель сразу получает текущее состояние со всеми ключами как изменёнными. */
 export function subscribe(fn: Listener): void {
   listeners.add(fn);

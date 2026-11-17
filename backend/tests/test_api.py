@@ -108,5 +108,33 @@ def test_bad_horizon_422(client):
     assert client.get("/api/forecast/AAA?model=naive&horizon=31").status_code == 422
 
 
+def test_retrain_flow(client, monkeypatch):
+    import time
+
+    from forecast.api import app as app_module
+    from forecast.jobs import JobManager
+    from tests.test_pipeline import FAST
+
+    monkeypatch.setattr(app_module, "jobs", JobManager(models=FAST))
+    job_id = client.post("/api/retrain/BBB").json()["job_id"]
+    for _ in range(200):
+        job = client.get(f"/api/jobs/{job_id}").json()
+        if job["status"] != "running":
+            break
+        time.sleep(0.05)
+    assert job["status"] == "done"
+    assert client.get("/api/metrics/BBB").status_code == 200
+
+
+def test_retrain_unknown_ticker_404(client):
+    assert client.post("/api/retrain/ZZZ").status_code == 404
+
+
+def test_unknown_job_404(client):
+    r = client.get("/api/jobs/nope")
+    assert r.status_code == 404
+    assert r.json()["detail"] == "Задача не найдена"
+
+
 def test_bad_model_422(client):
     assert client.get("/api/forecast/AAA?model=gpt&horizon=5").status_code == 422

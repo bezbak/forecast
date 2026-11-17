@@ -1,3 +1,4 @@
+import * as api from "../api";
 import type { ApiError, MetricsResponse, ModelMetrics } from "../api";
 import * as data from "../data";
 import { dateRu, pct, price, trend } from "../format";
@@ -33,6 +34,11 @@ export function mountModelPanel(el: HTMLElement): void {
     </div>
     <div class="mp-section mp-result"></div>
     <div class="mp-section mp-quality"></div>
+    <div class="mp-section mp-retrain">
+      <button class="mp-retrain-btn">Переобучить модели</button>
+      <div class="mp-progress" hidden><i></i></div>
+      <span class="mp-retrain-status"></span>
+    </div>
     <p class="mp-note">Точность — на последних 252 торговых днях: модель каждый день прогнозирует следующий, не видя будущего.</p>`;
   const $ = (s: string) => body.querySelector(s) as HTMLElement;
   const range = $(".mp-range") as HTMLInputElement;
@@ -135,8 +141,63 @@ export function mountModelPanel(el: HTMLElement): void {
     });
   }
 
+  // ── Переобучение: фоновая задача на сервере, прогресс опрашивается раз в 700 мс
+  const retrainBtn = $(".mp-retrain-btn") as HTMLButtonElement;
+  const progress = $(".mp-progress");
+  const status = $(".mp-retrain-status");
+  let polling = 0;
+  let retrainTicker: string | null = null; // к какой бумаге относится текущий статус
+
+  function setRetrain(text: string, frac: number | null, busy: boolean): void {
+    status.textContent = text;
+    progress.hidden = frac == null;
+    progress.style.setProperty("--p", `${(frac ?? 0) * 100}%`);
+    retrainBtn.disabled = busy;
+  }
+
+  async function poll(jobId: string, ticker: string): Promise<void> {
+    const my = ++polling;
+    for (;;) {
+      await new Promise((r) => setTimeout(r, 700));
+      if (my !== polling) return;
+      let job;
+      try {
+        job = await api.getJob(jobId);
+      } catch (e) {
+        setRetrain((e as ApiError).message, null, false);
+        return;
+      }
+      if (job.status === "running") {
+        const name = job.model ? MODEL_LABELS[job.model] : "подготовка";
+        setRetrain(`${ticker} · обучение: ${name} · ${Math.round(job.progress * 100)}%`, job.progress, true);
+        continue;
+      }
+      if (job.status === "failed") {
+        setRetrain(`Ошибка: ${job.error ?? "неизвестно"}`, null, false);
+        return;
+      }
+      setRetrain(`${ticker} · прогноз обновлён`, null, false);
+      data.invalidate(ticker);
+      if (store.get().ticker === ticker) store.refresh();
+      return;
+    }
+  }
+
+  retrainBtn.addEventListener("click", async () => {
+    const ticker = store.get().ticker;
+    retrainTicker = ticker;
+    setRetrain("Запуск…", 0, true);
+    try {
+      const { job_id } = await api.retrain(ticker);
+      void poll(job_id, ticker);
+    } catch (e) {
+      setRetrain((e as ApiError).message, null, false);
+    }
+  });
+
   renderLoading($(".mp-result"));
   store.subscribe((s, changed) => {
+    if (changed.has("ticker") && !retrainBtn.disabled && s.ticker !== retrainTicker) setRetrain("", null, false);
     range.value = String(s.horizon);
     $(".mp-h").textContent = `${s.horizon} дн.`;
     setRangeFill();
