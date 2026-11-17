@@ -1,0 +1,11 @@
+numpy
+pandas
+pyarrow
+yfinance
+statsmodels==0.15.*
+scikit-learn
+torch==2.15.*
+fastapi
+uvicorn
+httpx
+pytest
