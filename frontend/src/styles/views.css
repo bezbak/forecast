@@ -165,7 +165,13 @@
 .mp-range::-moz-range-thumb { width: 10px; height: 14px; background: var(--fg); border: 0; border-radius: 1px; }
 .mp-ticks { display: flex; justify-content: space-between; font-size: 9.5px; color: var(--fg-3); }
 .mp-result { min-height: 104px; }
-.mp-result .state { position: static; padding: 0; }
+.mp-result .state, .mp-quality .state { position: static; padding: 0; }
+.ch-retry {
+  background: none; border: 1px solid var(--line-2); border-radius: var(--radius); padding: 2px 8px; cursor: pointer;
+  font: 500 var(--t-xs) var(--font-ui); text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg);
+}
+.ch-retry:hover { border-color: var(--accent); color: var(--accent); }
+.hm-tile.flat .num { color: var(--fg-2); }
 .mp-big { display: flex; align-items: baseline; gap: 10px; }
 .mp-price { font-size: 26px; font-weight: 500; letter-spacing: -0.03em; }
 .mp-iv { display: flex; justify-content: space-between; font-size: var(--t-sm); color: var(--fg-2); }

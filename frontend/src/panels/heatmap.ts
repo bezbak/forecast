@@ -1,7 +1,8 @@
 import type { ApiError, OverviewRow } from "../api";
 import * as data from "../data";
-import { pct } from "../format";
+import { pct, trend } from "../format";
 import * as store from "../store";
+import { MODEL_LABELS } from "../store";
 import { panelShell, renderError, renderLoading } from "./status";
 
 type Mode = "today" | "forecast";
@@ -31,7 +32,7 @@ export function mountHeatmap(el: HTMLElement, tabs: HTMLElement): { show: () => 
 
   const seg = document.createElement("div");
   seg.className = "seg";
-  seg.innerHTML = `<button data-mode="today">Сегодня</button><button data-mode="forecast">Прогноз 7 дн.</button>`;
+  seg.innerHTML = `<button data-mode="today">Сегодня</button><button data-mode="forecast" title="Прогноз лучшей по MAE модели, кроме Naive">Прогноз 7 дн.</button>`;
   seg.addEventListener("click", (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>("button[data-mode]");
     if (!b) return;
@@ -57,8 +58,9 @@ export function mountHeatmap(el: HTMLElement, tabs: HTMLElement): { show: () => 
         <div class="hm-tiles">${list.map((r) => {
           const v = mode === "today" ? r.change_pct : r.forecast_pct;
           const k = v == null ? 0 : Math.min(1, Math.abs(v) / lim);
-          const dir = v == null ? "none" : v >= 0 ? "up" : "down";
-          const text = v == null ? "нет прогноза" : pct(v);
+          const dir = v == null ? "none" : trend(Math.abs(v) < 0.05 ? 0 : v);
+          const by = mode === "forecast" && r.forecast_model ? ` · модель ${MODEL_LABELS[r.forecast_model]}` : "";
+          const text = v == null ? "нет прогноза" : pct(v) + by;
           return `<button class="hm-tile ${dir}" data-ticker="${r.ticker}" style="--k:${k.toFixed(3)}"`
             + ` aria-current="${r.ticker === current}" title="${r.ticker}: ${text}">`
             + `<b>${r.ticker}</b><span class="num">${v == null ? "—" : pct(v, 1)}</span></button>`;

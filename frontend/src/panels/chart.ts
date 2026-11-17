@@ -8,6 +8,7 @@ import { compact, dateRu, pct, price, trend } from "../format";
 import * as store from "../store";
 import { MODEL_LABELS } from "../store";
 import { flash, progressive } from "../motion";
+import { forecastSeries } from "../forecastSeries";
 import { panelShell, renderEmpty, renderError, renderLoading } from "./status";
 
 const RANGES: [RangeName, string][] = [["1M", "1М"], ["3M", "3М"], ["6M", "6М"], ["1Y", "1Г"], ["5Y", "5Л"], ["ALL", "Всё"]];
@@ -65,6 +66,7 @@ export function mountChart(el: HTMLElement): void {
   let hiLine: ISeriesApi<"Line"> | null = null;
   let candles: Candle[] = [];
   let fc: ForecastResponse | null = null;
+  let fcError: ApiError | null = null;
   let shown = 0; // сколько точек прогноза уже нарисовано (для анимации)
   let stopAnim: () => void = () => undefined;
 
@@ -142,13 +144,14 @@ export function mountChart(el: HTMLElement): void {
       band.setAttribute("d", "");
       return;
     }
-    const last = candles[candles.length - 1];
     const top: string[] = [];
     const bottom: string[] = [];
-    const y0 = candleSeries.priceToCoordinate(last.close);
-    if (y0 == null) return;
-    top.push(`${x0},${y0}`);
-    bottom.push(`${x0},${y0}`);
+    // полоса начинается там же, где линия прогноза: в дате и цене, на которые он построен
+    const xs = ts.timeToCoordinate(fc!.asof as Time);
+    const ys = candleSeries.priceToCoordinate(fc!.last_close);
+    if (xs == null || ys == null) return;
+    top.push(`${xs},${ys}`);
+    bottom.push(`${xs},${ys}`);
     for (const p of pts) {
       const x = ts.timeToCoordinate(p.date as Time);
       const yh = candleSeries.priceToCoordinate(p.hi);
@@ -177,14 +180,12 @@ export function mountChart(el: HTMLElement): void {
   }
 
   function renderForecastLines(animate = false): void {
+    renderForecastLabel(animate);
     if (!fcLine || !loLine || !hiLine || !candles.length) return;
     stopAnim();
-    const last = candles[candles.length - 1];
     const ok = fc?.status === "ok" && fc.points.length > 0;
-    const start = { time: last.time as Time, value: last.close };
     const pts = ok ? fc!.points : [];
-    const series = (key: "value" | "lo" | "hi") => [start, ...pts.map((p) => ({ time: p.date as Time, value: p[key] }))];
-    const all = { value: series("value"), lo: series("lo"), hi: series("hi") };
+    const all = ok ? forecastSeries(fc!) : { value: [], lo: [], hi: [] };
     const draw = (k: number) => {
       shown = k;
       fcLine!.setData(ok ? all.value.slice(0, k + 1) : []);
@@ -198,16 +199,28 @@ export function mountChart(el: HTMLElement): void {
     } else {
       draw(pts.length);
     }
+  }
+
+  /** Подпись прогноза над графиком; обновляется даже когда сам график в состоянии ошибки. */
+  function renderForecastLabel(animate: boolean): void {
     const box = q(".ch-fc");
     const s = store.get();
+    const ok = fc?.status === "ok" && fc.points.length > 0;
     if (ok) {
       const end = fc!.points[fc!.points.length - 1];
       const change = (end.value / fc!.last_close - 1) * 100;
+      const lastCandle = candles[candles.length - 1]?.time;
+      const stale = lastCandle && forecastSeries(fc!).stale(lastCandle)
+        ? `<span class="tag tag-down" title="Котировки новее модели: запустите обучение заново">прогноз от ${dateRu(fc!.asof)}</span>` : "";
       box.innerHTML = `<span class="label">Прогноз · ${MODEL_LABELS[s.model]} · ${s.horizon} дн.</span>`
-        + `<span class="num">${price(end.value)}</span><span class="num ${trend(change)}">${pct(change)}</span>`;
+        + `<span class="num">${price(end.value)}</span><span class="num ${trend(change)}">${pct(change)}</span>${stale}`;
       if (animate) box.querySelectorAll(".num").forEach(flash);
+    } else if (fcError && fcError.status !== 404) {
+      box.innerHTML = `<span class="label">Прогноз · ${MODEL_LABELS[s.model]}</span><span class="ch-fc-off">${fcError.message}</span>`
+        + `<button class="ch-retry">Повторить</button>`;
+      box.querySelector("button")!.addEventListener("click", () => store.refresh());
     } else {
-      const why = fc?.status === "insufficient_data" ? "недостаточно истории"
+      const why = fc?.status === "insufficient_data" ? "недостаточно истории для прогноза"
         : fc?.status === "failed" ? "ошибка обучения модели" : "нет прогноза";
       box.innerHTML = `<span class="label">Прогноз · ${MODEL_LABELS[s.model]}</span><span class="ch-fc-off">${why}</span>`;
     }
@@ -250,7 +263,7 @@ export function mountChart(el: HTMLElement): void {
       candles = [];
       setOhlc(undefined);
       if (e.status === 404) renderEmpty(body, e.message);
-      else renderError(body, e, () => { loadCandles(); loadForecast(); });
+      else renderError(body, e, () => store.refresh());
     });
   }
 
@@ -261,17 +274,19 @@ export function mountChart(el: HTMLElement): void {
     data.forecast(s.ticker, s.model, s.horizon).then((f) => {
       if (!isCurrent()) return;
       fc = f;
+      fcError = null;
       renderForecastLines(true);
-    }, () => {
+    }, (e: ApiError) => {
       if (!isCurrent()) return;
       fc = null;
+      fcError = e;
       renderForecastLines();
     });
   }
 
   store.subscribe((s, changed) => {
     seg.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.range === s.range)));
-    if (changed.has("ticker")) { fc = null; renderQuote(); }
+    if (changed.has("ticker")) { fc = null; fcError = null; renderQuote(); }
     if (changed.has("ticker") || changed.has("range")) loadCandles();
     if (changed.has("ticker") || changed.has("model") || changed.has("horizon")) loadForecast();
   });

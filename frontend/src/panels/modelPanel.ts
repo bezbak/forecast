@@ -107,7 +107,9 @@ export function mountModelPanel(el: HTMLElement): void {
     data.forecast(s.ticker, s.model, s.horizon).then((f) => {
       if (!isCurrent()) return;
       if (f.status !== "ok" || !f.points.length) {
-        box.innerHTML = `<span class="label">Прогноз</span><p class="mp-warn">Прогноз недоступен</p>`;
+        const why = f.status === "insufficient_data" ? "Недостаточно истории для прогноза"
+          : f.status === "failed" ? "Модель не обучилась на этой бумаге" : "Прогноз недоступен";
+        box.innerHTML = `<span class="label">Прогноз</span><p class="mp-warn">${why}</p>`;
         return;
       }
       const end = f.points[f.points.length - 1];
@@ -120,7 +122,7 @@ export function mountModelPanel(el: HTMLElement): void {
     }, (e: ApiError) => {
       if (!isCurrent()) return;
       if (e.status === 404) renderEmpty(box, e.message);
-      else renderError(box, e, renderResult);
+      else renderError(box, e, () => store.refresh());
     });
   }
 
@@ -134,10 +136,11 @@ export function mountModelPanel(el: HTMLElement): void {
       metrics = m;
       renderModels();
       renderQuality();
-    }, () => {
+    }, (e: ApiError) => {
       if (!isCurrent()) return;
       renderModels();
-      renderQuality();
+      if (e.status === 404) renderQuality();
+      else renderError($(".mp-quality"), e, () => store.refresh());
     });
   }
 

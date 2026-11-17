@@ -50,9 +50,10 @@ def _try_result(ticker: str) -> dict | None:
         return None
 
 
-def _best_model(result: dict) -> dict | None:
-    ok = [m for m in result.get("models", {}).values() if m["status"] == "ok"]
-    return min(ok, key=lambda m: m["metrics"]["mae"]) if ok else None
+def _best_model(result: dict) -> tuple[str, dict] | None:
+    """Лучшая по MAE модель, кроме Naive: прогноз Naive всегда 0% и для карты бесполезен."""
+    ok = [(name, m) for name, m in result.get("models", {}).items() if m["status"] == "ok" and name != "naive"]
+    return min(ok, key=lambda nm: nm[1]["metrics"]["mae"]) if ok else None
 
 
 @app.get("/api/tickers")
@@ -122,11 +123,12 @@ def overview():
     for row in tickers():
         res = _try_result(row["ticker"])
         best = _best_model(res) if res else None
-        forecast_pct = None
+        forecast_pct = forecast_model = None
         if best:
-            forecast_pct = (best["path"][OVERVIEW_DAY - 1]["value"] / res["last_close"] - 1) * 100
+            forecast_model, m = best
+            forecast_pct = (m["path"][OVERVIEW_DAY - 1]["value"] / res["last_close"] - 1) * 100
         rows.append({"ticker": row["ticker"], "sector": row["sector"], "change_pct": row["change_pct"],
-                     "forecast_pct": forecast_pct})
+                     "forecast_pct": forecast_pct, "forecast_model": forecast_model})
     return rows
 
 

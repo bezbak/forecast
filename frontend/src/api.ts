@@ -17,7 +17,10 @@ export interface ModelMetrics {
   beats_naive: boolean | null; error?: string | null;
 }
 export interface MetricsResponse { ticker: string; status: "ok" | "insufficient_data"; models: ModelMetrics[] }
-export interface OverviewRow { ticker: string; sector: string; change_pct: number; forecast_pct: number | null }
+export interface OverviewRow {
+  ticker: string; sector: string; change_pct: number;
+  forecast_pct: number | null; forecast_model: ModelName | null;
+}
 export interface Meta { universe_asof: string; data_asof: string | null }
 export interface Job {
   id: string; ticker: string; status: "running" | "done" | "failed";

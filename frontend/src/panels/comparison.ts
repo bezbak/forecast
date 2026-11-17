@@ -64,7 +64,7 @@ export function mountComparison(el: HTMLElement, tabs?: HTMLElement): void {
     }, (e: ApiError) => {
       if (!isCurrent()) return;
       if (e.status === 404) renderEmpty(body, e.message);
-      else renderError(body, e, load);
+      else renderError(body, e, () => store.refresh());
     });
   }
 

@@ -86,6 +86,14 @@ def test_overview(client):
     assert rows["AAA"]["sector"] == "Tech"
 
 
+def test_overview_skips_naive_and_names_model(client):
+    rows = {r["ticker"]: r for r in client.get("/api/overview").json()}
+    # в фикстуре Naive обгоняет «дрейфующую» модель по MAE, но карта всё равно показывает не-наивную
+    assert rows["AAA"]["forecast_model"] == "boosting"
+    assert rows["AAA"]["forecast_pct"] != 0
+    assert rows["BBB"]["forecast_model"] is None
+
+
 def test_meta(client):
     body = client.get("/api/meta").json()
     assert body["universe_asof"] == "2025-12-22"
