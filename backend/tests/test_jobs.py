@@ -59,7 +59,10 @@ def test_same_ticker_same_job(tmp_data):
     assert jobs.get(first)["status"] == "running"
     gate.set()
     assert wait_done(jobs, first)["status"] == "done"
-    assert jobs.start("AAA") != first
+    second = jobs.start("AAA")
+    assert second != first
+    # дождаться второй задачи, иначе её поток запишет файл уже после теста — в реальные данные
+    wait_done(jobs, second)
 
 
 def test_unknown_job():
